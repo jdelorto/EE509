@@ -1,6 +1,6 @@
 ---
 title: 'Lab 1 - R Primer'
-author: "GE509"
+author: "Joe Delorto"
 output: html_document
 ---
 
@@ -157,7 +157,45 @@ g.	How does R represent when the output of a function is not a number?
 6.	If a population starts with a density of 5 individuals/hectare and grows exponentially at a growth rate r=0.04/year, what is the size of the population in π years? (show code)
 7.	Subtract the month you were born from the remainder left after you divide the year you were born by the day you were born (show code)
 ```
+1.
+```{r q1}
+print(log(1))
+print(log(0))
+print(log(exp(1)))
+print(log(-5))
+print(-log(5))
+print(log(1/5))
+```
+R represents a non-numeric or undefined answer as "NaN".
 
+2. R's trigonometric functions return values in radians, so we must convert them to degrees by multiplying by 180/pi.
+
+3. atan2 allows the user to input the side lengths that define the angle as two separate arguments, rather than the fraction of the two as a single argument.
+
+4. log returns natural log/ln; log10 returns the log in base 10 (more commonly referred to as "log").
+
+5.
+```{r q5}
+sqrt(5^2 + 13^2)
+```
+
+6.
+```{r q6}
+p0 <- 5
+r <- 0.04
+t <- 3.14159
+
+p <- p0 * (1 + r)^t
+print(p)
+```
+7.
+```{r q7}
+day <- 18
+mo <- 1
+yr <- 2000
+
+print(yr %% day - mo)
+```
 
 ## R Scripts
 
@@ -205,6 +243,31 @@ Questions:
 a.	What is the difference between values in this sequence?
 b.	What is the sum of the exponential of this sequence?
 11.	Calculate a second difference [a difference of differences] for the sequence 1:10 (show code)
+```
+8. Sum returns a single integer value that is the sum of all values in the vector. Cumsum returns a vector that gives the cumulative sum after each position in the original vector.
+
+9.
+```{r q9}
+print(seq(-6,6))
+```
+
+10.
+```{r q10}
+sequence <- print(seq(-4.8,3.43,length.out=8))
+```
+a.
+```{r q10a}
+print((3.43+4.8)/(8-1))
+```
+b.
+```{r q10b}
+e_seq <- exp(sequence)
+print(sum(e_seq))
+```
+
+11.
+```{r q11}
+print(diff(diff(1:10)))
 ```
 
 ## Loading and Saving Data
@@ -264,6 +327,17 @@ Within the Environment window, clicking on a variable will show you the contents
 12.	Save the frog data file delimited in a pipe-delimited format (i.e. separated by ‘|’). Open the file up in a text editor and cut-and-paste the first few lines of the file into your Rscript file (just so I can see what you did).  Load the data back up into R as ‘dat2’ (show code)
 ```
 
+12.
+```{r q12}
+write.table(dat,"my_frogs.txt",row.names=FALSE,sep="|")
+```
+
+```"frogs"|"tadpoles"|"color"|"spots"
+1.1|2.03698175474231|"red"|TRUE
+1.3|2.87623092770957|"red"|FALSE
+1.7|3.06252807802208|"red"|TRUE
+1.8|3.70717972952171|"red"|FALSE
+```
 
 ## Data types and dimensions
 
@@ -340,6 +414,18 @@ as.matrix(dat)
 15.	Show the first 3 rows
 ```
 
+13.
+```{r q13}
+as.character(dat$spots)
+```
+
+14.
+```{r q14}
+dat[3:8,1:3]
+```
+
+
+
 ## Combining vectors
 
 There is a simple function **c( )** in R that “combines” vectors or numbers into a single vector. You use it like this:
@@ -374,6 +460,17 @@ rbind(q,p)		# bind as rows
 16.	Create a character vector that contains the names of 4 super heros.
 17.	Show just the odd numbered rows in the frog data. Write this code for the GENERAL CASE (i.e. don’t just type c(1,3,5,…) but use functions that you learned in previous sections to set up the sequence.
 ```
+
+16.
+```{r q16}
+super <- c("Mr. Incredible","Elastigirl","Frozone","Dynaguy")
+```
+
+17.
+```{r q17}
+dat[c(TRUE,FALSE),]
+```
+
 
 ## Logical operators and indexing
 
@@ -485,6 +582,19 @@ as.numeric(y>13)
   e.	display just the rows where there are less than 2.5 red frogs
   f.	display where either frogs do not have spots or there are more than 5 frogs
 ```
+
+18.
+```{r q18}
+subset(dat,spots==TRUE)
+subset(dat,color=="blue")
+sum(subset(dat,color=="blue")[,2])
+some_tadpoles <- subset(dat,tadpoles>3 & tadpoles<5)
+some_tadpoles
+subset(dat,frogs<2.5 & color=="red")
+subset(dat,spots==FALSE | frogs>5)
+```
+
+
 ## Plots, tables, and exploratory analysis
 
 Often understanding our data requires more than just being able to subset the raw data, but also the ability to summarize and visualize data. The **table** command can do basic tabulation and cross tabulation of data
@@ -533,7 +643,7 @@ abline(a=0,b=1)					## add a 1:1 line (intercept=0, slope=1)
 hist(dat$tadpoles)				## histogram
 abline(v=mean(dat$tadpoles))			## add a vertical line at the mean
 
-pairs(dat)					## all pairwise scatter plots
+pairs(dat[c(1,2)])					## all pairwise scatter plots
 
 barplot(tapply(dat$frogs,dat$color,mean))		## barplot of frogs by color
 abline(h=3)					## add a horizontal line at 3
@@ -547,7 +657,21 @@ Within the Plot window, graphs can be cut-and-pasted into other documents or sav
   19.	Plot the following lines from 0 to 3 (hint: define x as a sequence with a small step size). Make sure to make the resolution of x sufficiently small to see the curves
    a.	ln(x)
    b. $e^{-x}$
+   
+```{r q19}
+x <- seq(0,3,by=0.01)
+plot(x,log(x),type='l')
+plot(x,exp(-x),type='l')
+```
+
+  
   20.	Make a barplot of the median number of frogs grouped by whether they have spots or not.
+  
+```{r q20}
+barplot(tapply(dat$frogs, dat$spots, median),xlab="spots?",ylab="median number of frogs")
+```
+  
+  
   21.	Plot a histogram of blue frogs
   22.	Use apply to calculate the across-population standard deviations in the numbers of frogs and tadpoles
 
@@ -608,6 +732,25 @@ legend("topleft",
   c.	Fit a series of linear models of tadpoles as a function of frogs, spots, color, and their interaction terms. Build up from a simple model to the most complex model that is supported by the available data (i.e. all terms should be significant). Also test the full model that includes all variables and interaction terms.
 ```
 
+```{r q23}
+red_frogs <- subset(dat,color=="red")
+red_lm <- lm(tadpoles ~ frogs,data=red_frogs)
+summary(red_lm)
+plot(red_frogs$frogs,red_frogs$tadpoles)
+abline(coef(red_lm)[1],coef(red_lm)[2])
+
+reg_frogs <- lm(tadpoles ~ frogs, data=dat)
+summary(reg_frogs)
+reg_spots <- lm(tadpoles ~ spots, data=dat)
+summary(reg_spots)
+reg_color <- lm(tadpoles ~ color, data=dat)
+summary(reg_color)
+reg_all <- lm(tadpoles ~ frogs*spots*color, data=dat)
+summary(reg_all)
+```
+
+The only predictor that is significantly correlated with `tadpoles` is `frogs`. However, when all predictors and their interactions are considered, two of the interaction terms (spots/color and frogs/spots/color) are significant as well.
+
 ## IF statements
 
 Logical operators are not just used for subsetting data, but can be used to control the flow of an analysis and make decisions. The idea is that we want to tell the computer a set of rules, such as “if X happens, then do Y, otherwise do Z”.  The syntax for this in R is 
@@ -656,6 +799,14 @@ Aside: As is very common in R, as we learn more we often find more efficient way
 ```
 24.	Write an if statement that makes a scatter plot of x if all the values are positive, and plots a histogram otherwise.
 ```
+```{r q24}
+if(all(x>=0)){
+  plot(1:length(x),x)
+}else{
+  hist(x)
+}
+```
+
 
 ## Defining custom functions
 
@@ -691,6 +842,24 @@ my.division(x,"5")
 ```
 25.	Convert the more complicated graphing example at the end of  “Classic Tests” into a function that will make the same plots for any data set. Show how you would call the function passing it just the subset of data where there are 5 or more tadpoles.
 ```
+
+```{r q25}
+createPlots <- function(data,x.col,y.col,x.lab,y.lab,title){
+  reg <- lm(y.col ~ x.col)
+  plot(x.col,y.col,
+       xlab=x.lab, ylab=y.lab,
+       main=title
+       )
+  abline(reg, lwd=3)
+  summary(reg)
+  plot(reg)
+}
+
+many_tadpoles <- subset(dat,tadpoles>=5)
+createPlots(many_tadpoles,many_tadpoles$frogs,many_tadpoles$tadpoles,"frogs","tadpoles","frogs v. tadpoles")
+```
+
+
 
 ## For loops
 
@@ -728,6 +897,29 @@ plot(N)
 26.	Starting with a vector x = 1:10, write a for loop that adds 5 to each value in the vector. Note that it is permissible to assign an element in a vector to itself (e.g. x[i] = x[i] + 5)
 27.	Modify the logistic growth code to simulate discrete-time exponential growth and plot the output.
 ```
+
+26.
+```{r q26}
+x <- 1:10
+for(i in 1:length(x)){
+  x[i] <- x[i]+5
+}
+x
+```
+
+27.
+```{r q27}
+NT = 100  		## number of time steps
+N0 = 1				## initial population size
+r = 0.2				## population growth rate
+K = 10				## carrying capacity
+N = rep(N0,NT)
+for(t in 2:NT){
+	N[t] <- N0*exp(r*(t-1))    ## discrete logistic growth
+}
+plot(N)
+```
+
 
 ## Vector and Matrix Math
 
