@@ -209,6 +209,11 @@ lines(x,dunif(x,-3,3),col=2)
 2. What do the second and third arguments to the uniform specify? What are their default values?
 ```
 
+1. The uniform distribution is simply an even distribution of probability density across all 'x' values. Therefore, as the width increases (more x values), the height of the probability distribution (i.e., 1/(range of x)) will  decrease.
+
+2. The upper and lower limits of the distribution.
+
+
 ### Beta
 
 The Beta is an interesting distribution because it is bound on the range 0 <= X <= 1 and thus is very often used to describe data that is a proportion.  At first glance the mathematical formula for the Beta looks a lot like the Binomial:
@@ -248,6 +253,56 @@ Lab questions:
   4) In the first panel, the mean is the same for each line (0.5).  What are the variances? (Hint: Calculate this analytically. Look up the distribution in one of the recommended references.)
   5) In the second panel, what are the means and medians of each of these curves?  (Hint: you'll need to calculate the mean analytically and use one of the variants of R's beta function to find the median.)
 ```
+
+3. Beta(1,1) = Unif(0,1)
+
+4. $$var[X] = \frac{\alpha\beta}{(\alpha+\beta)^2(\alpha+\beta+1)}$$
+
+
+```{r q4}
+ab1 <- 5 ## alpha and beta are equal in all three cases
+ab2 <- 1
+ab3 <- 0.2
+
+beta_var <- function(alpha, beta){
+  var <- (alpha * beta) / ((alpha+beta)^2*(alpha+beta+1))
+  return(var)
+}
+
+var1 <- beta_var(ab1, ab1)
+var2 <- beta_var(ab2, ab2)
+var3 <- beta_var(ab3, ab3)
+
+var1
+var2
+var3
+```
+
+5. $$E[X] = \frac{\alpha}{\alpha+\beta}$$
+
+```{r q5}
+beta_mean <- function(alpha, beta){
+  me <- alpha / (alpha + beta)
+  return(me)
+}
+
+me1 <- beta_mean(ab1, ab1)
+me2 <- beta_mean(ab2, ab2)
+me3 <- beta_mean(ab3, ab3)
+
+me1
+me2
+me3
+
+md1 <- qbeta(0.5,ab1,ab1)
+md2 <- qbeta(0.5,ab2,ab2)
+md3 <- qbeta(0.5,ab3,ab3)
+
+md1
+md2
+md3
+```
+
 
 ### Log Normal
 
@@ -291,8 +346,45 @@ lines(x,dlnorm(x,2,1),col=4)
 
 ### Lab questions
 ```
-6) What are the arithmetric and geometric means of the three curves in the first panel? (Reminder: arithmetic means are means in the linear domain, geometric means are means in the log domain)
+6) What are the arithmetic and geometric means of the three curves in the first panel? (Reminder: arithmetic means are means in the linear domain, geometric means are means in the log domain)
 ```
+
+$$E[X] = \exp(\mu + \frac{\sigma^2}{2})$$
+$$GM = \exp(\mu)$$
+
+```{r q6}
+## Arithmetic Mean
+sigma <- 1 ## sigma is 1 for all distributions above
+
+mu1 <- 0
+mu2 <- 1
+mu3 <- 2
+
+lnorm_arimean <- function(mu, sigma){
+  me <- exp(mu + sigma^2/2)
+  return(me)
+}
+
+ma1 <- lnorm_arimean(mu1, sigma)
+ma2 <- lnorm_arimean(mu2, sigma)
+ma3 <- lnorm_arimean(mu3, sigma)
+
+ma1
+ma2
+ma3
+
+## Geometric Mean
+
+mg1 <- exp(mu1)
+mg2 <- exp(mu2)
+mg3 <- exp(mu3)
+
+mg1
+mg2
+mg3
+
+```
+
 
 ## Exponential & Laplace
 
@@ -325,6 +417,8 @@ lines(x,dnorm(x,5),col=2)
 ``` 
 7) The last two panels compare a normal and a Laplace distribution with the same mean and variance.  How do the two distributions compare?  In particular, compare the difference in the probabilities of extreme events in each distribution.
 ```
+
+A Laplace distribution ascribes higher probability to extreme events and events immediatlely surrounding the mean. This makes sense given the fact that the densities of a normal distribtuion are calculated with a square as opposed to the absolute value used to calculate the Laplace distribution; thus, extreme events are less "dampened" or "suppressed" in the Laplace distribution than in the normal distribution.
 
 ## Gamma
 
@@ -377,6 +471,8 @@ shape
 ``` 
 8) Looking at the 'change variance' figure, how does the variance change as a and r increase? Qualitatively, how does this affect the mode and skew? Quantitatively, how does this affect the median (relative to the mean)?
 ```
+
+8. Variance decreases as a and r increase (dividing by larger decimals as r increases). This shifts the mode further to the right and decreases the degree of the rightward skew, and brings the median closer to the mean.
 
 # Part 2: Discrete distributions
 
