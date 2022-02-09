@@ -472,7 +472,21 @@ shape
 8) Looking at the 'change variance' figure, how does the variance change as a and r increase? Qualitatively, how does this affect the mode and skew? Quantitatively, how does this affect the median (relative to the mean)?
 ```
 
-8. Variance decreases as a and r increase (dividing by larger decimals as r increases). This shifts the mode further to the right and decreases the degree of the rightward skew, and brings the median closer to the mean.
+8. Variance decreases as a and r increase (dividing by larger decimals as r increases). This decreases the (in this case, rightward) skew of the model and increases the density at the mode.
+
+$$E[X] = ar$$
+
+```{r q8}
+med <- qgamma(0.5,a,r)
+me <- a*r
+delta <- med-me
+
+med
+me
+delta
+```
+
+As a and r increase (moving backwards through the vector above), the difference between the mean and the median grows larger.
 
 # Part 2: Discrete distributions
 
@@ -521,6 +535,8 @@ legend("topright",legend=c("sample","pmf"),lty=1,col=1:2)
 9)  Consider a binomial distribution that has a constant mean, np.  What are the differences in the shape of this distribution if it has a high n and low p vs. a low n and high p?
 ```
 
+The high n, low p distribution would be right-tailed. On the other hand, the low n, high p distribution would be left-tailed.
+
 ## Poisson
 
 The Poisson is also very common for count data and arises as the number of events that occur in a fixed amount of time (e.g. number of bird sightings per hour), or the number of items found in a fixed amount of space (e.g. the number of trees in a plot). Unlike the Binomial distribution the Poisson doesn't have a fixed upper bound for the number of events that can occur.
@@ -553,6 +569,14 @@ The last two panels depict a comparison of the Poisson, Normal, and Binomial wit
 12) Is the Poisson a good approximation of the Binomial?
 13) Is it possible to choose the parameters so that the Poisson and Binomial to both have the same mean and  variance?  If so what is this parameterization?
 ```
+
+10. The normal distribution is a fine approximation of the Poisson distribution so long as their variances are equal and the mean is sufficiently larger than zero.
+
+11. The normal distribution would not be a good approximation for small numbers, as it is does not share the Poisson's lower bound at zero, thus giving the possiblity of negative count values. The binomial distribution would serve as a better approximation for lower numbers.
+
+12. The Poisson is not a good approximation of the Binomial, with a much lower peak and fatter tails.
+
+13. Given that the Poisson's only parameter, mu, is both the distribution's mean and its variance, the parameterization of the binomial would need to satisfy $$np = \mu$$ and $$np(1-p) = \mu$$. Setting these two expressions equal to each other, we can see that $$1-p = 1$$, forcing a result of p = 0. Thus, there is no way to parameterize the distributions such that they have equal means and variances.
 
 ## Negative binomial
 
@@ -602,3 +626,10 @@ lines(x,dnbinom(x,1,0.15),type="s",col=4,lty=2)
 14)  In the 'vary size' panel, what are the means of the curves? 
 15) In the “vary variance” panel, how does the shape of the Negative Binomial compare to a Poisson with the same mean?
 ```
+
+
+14. $$\mu = \frac{pr}{1-p}$$
+
+1, 2, 3, 5, and 10
+
+15. In these cases, the Negative Binomial has fatter tails than a Poisson distribution with the same mean.
