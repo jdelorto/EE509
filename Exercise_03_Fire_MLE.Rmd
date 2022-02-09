@@ -1,6 +1,6 @@
 ---
 title: "Lab 03 - Maximum Likelihood"
-author: "GE509"
+author: "Joe Delorto"
 output: html_document
 ---
 
@@ -159,6 +159,14 @@ The output from `nlm` is mostly the same as for `optimize` but it includes a few
 1) Include code to make a plot of the exponential PDF (with the MLE parameter estimate) on top of the histogram of the data.
 ```
 
+```{r q1}
+xseq <- seq(0,40,length=200)
+
+hist(dat,freq=FALSE)
+lines(xseq,dexp(xseq,rate=rho_mle),type='l')
+```
+
+
 ## Case Study 2: Change in Fire Risk With Time
 
 Fire ecologists summarize information on the distribution of intervals between fires as basis for inference on how the probability of fire might change with time since the last fire.  Here we will be using observations of fire intervals in Itasca State Park in northwestern Minnesota taken from fire scars on red pine trees that were aged using tree rings (Clark 1990).  Fire return interval are frequently analyzed using a Weibull distribution:
@@ -180,6 +188,23 @@ lines(age,dweibull(age,.5,50),col="green")
 2) Does increasing the `shape` parameter cause fire risk to increase or decrease with age?
 3) Extra Credit: Plot the CDF of these 3 distributions. What is significant about the scale parameter? What is the analytical solution for the CDF at this point? Add these lines to your CDF plot.
 ```
+
+2. At higher ages > ~100, fire risk decreases with a larger "shape" parameter.
+
+```{r q3}
+plot(age,pweibull(age,1,50),type='l',ylab='CDF', ylim=c(0,1.00001))
+lines(age,pweibull(age,2,50),col='red')
+lines(age,pweibull(age,.5,50),col='green')
+abline(v=50,lty=2)
+abline(h=0.632,lty=2)
+```
+
+3. The shape parameter, or lambda, influences the mean of the distribution. According to the CDF equation for the Weibull distribution:
+
+$$CDF = 1 - \exp{(-(\frac{x}{\lambda})^c)}$$
+
+The CDF for lambda is $$1 - e^{-1} \approx 0.632$$
+
 
 Let’s begin by loading up the data set and take a quick look at it.  The data are actually stored as the number of times each return interval was observed, so our first step is to use `rep` to reconstruct the observations
 
@@ -204,6 +229,19 @@ wlik <- function(param){
 
 ```
 4) Since the exponential is a special case of the Weibull, use the numerical optimization code from the first case study to solve for the exponential MLE (rho_mle) for the fire scar data 
+```
+
+```{r q4}
+n_fire <- length(firedata)
+
+lkexp <- function(rho){
+  -n_fire*log(rho) + rho*sum(firedata)
+}
+
+fit <- optimize(lkexp,lower=0.01,upper=1,maximum=F)
+rho_mle_fire <- fit$minimum
+
+rho_mle_fire
 ```
 
 Next we'll specify the initial conditions for the numerical optimization – it doesn't matter what values you actually start from provided they are reasonable since they are just our first guess, though the closer you are to the correct value the less likely you are to end up in a local minima and the faster the algorithm will find the minima.  Below we start with the MLE for the Exponential special case.
@@ -286,5 +324,30 @@ Apply one of the **numerical optimization methods** you used above in order to e
 *  Negative log likelihood profile
 *  Answer the following question:  If we wanted to test the assumption that mortality rate was constant in time, which of the two data sets could we use and what model would we fit?
 6) Extra Credit: A plot of the exponential PDF with two curves, one based on the Exponential model from the start of this lab and the second from the Binomial/Exponential fit you just found 
+```
+
+```{r q5}
+t <- 20
+
+lkBinom <- function(rho){
+  -log(exp(-rho*t*y)*((1-exp(-rho*t))^(n-y)))
+}
+
+fit <- optimize(lkBinom,lower=0.01,upper=1,maximum=F)
+rho_mle_binom <- fit$minimum
+
+rho_mle_binom
+
+x <- seq(0,1,length=200)
+plot(x,lkBinom(x),type='l',main='Likelihood Profile')
+```
+
+If we wanted to determine a change in survival rate, we would use the first data set (which contains survival times). We would then fit this data to a Weibull distribution. A c/shape parameter less than 1 would indicate that the mortality rate decreases through time, while a c value greater than one would indicate that mortality rate increases through time.
+
+6.
+
+```{r q6}
+plot(xseq,dexp(xseq,rate=rho_mle),type='l',main='Exponential PDF')
+lines(xseq,dexp(xseq,rate=rho_mle_binom),col='red')
 ```
 
