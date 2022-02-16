@@ -349,5 +349,6 @@ If we wanted to determine a change in survival rate, we would use the first data
 ```{r q6}
 plot(xseq,dexp(xseq,rate=rho_mle),type='l',main='Exponential PDF')
 lines(xseq,dexp(xseq,rate=rho_mle_binom),col='red')
+legend("topright", legend=c('exponential PDF','exp-binom PDF'), lty=1, col=1:2)
 ```
 
