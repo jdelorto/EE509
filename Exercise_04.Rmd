@@ -1,6 +1,6 @@
 ---
 title: "Lab 04"
-author: "EE 509"
+author: "Joe Delorto"
 output: html_document
 ---
 
@@ -15,7 +15,7 @@ The response of ecosystems to elevated CO2 involves not just the change in growt
 Lets begin by loading up the data and taking a look at it
 
 ```{r}
-b <- read.table("data/pinecones.txt",header=TRUE)
+b <- read.table("data/pinecones.txt",header=TRUE,as.is = FALSE)
 
 str(b)
 summary(b)
@@ -102,10 +102,13 @@ plot(xseq,pnorm(xseq,15,3),type='l')
 
 In fitting the model numerically we're going to need some initial conditions for the routine to start from.  **Make a plot showing maturation (dia vs cones)**.  To this plot **add $\theta(x)$ to the maturation plot**.  Choose the parameters for this function (b0, b1) so that the plots is reasonable given the data.  Specify the values for (b0, b1) in R as a vector named "param".
 
-```{r,echo=FALSE}
-    b0 = 0
-    b1 = 0
-    param = c(b0,b1)
+```{r task1,echo=FALSE}
+b0 = 15
+b1 = 1.5
+param = c(b0,b1)
+
+plot(dia,cones,col=b$tmt)
+lines(xseq,pnorm(xseq,param[1],param[2]))
 ```
 
 This vector will be passed to our likelihood function below.  When choosing initial conditions, they don't have to be a great fit – finding that great fit is the job of the likelihood analysis – they just have to be in the right ballpark (e.g. your curves should show up on the plot of the data).
@@ -115,6 +118,19 @@ This vector will be passed to our likelihood function below.  When choosing init
 * Similar to `likFec` and the models we constructed last week, code up the negative log likelihood for this model as an R function
 * Test your function at your initial guess to verify that the function is working
 * Use a numerical optimization function to fit your log likelihood to the data. Make to use an optimization that supports multivariate problems (not `optimize`)
+
+```{r task2}
+negLogLike <- function(x,y,param){
+  -sum(dbinom(y,1,pnorm(x,param[1],param[2]),log=TRUE))
+}
+
+negLogLike(dia,cones,param)
+
+fit <- optim(param,negLogLike,dia,cones,param)
+
+fit$par
+```
+
 
 ## Combined Fecundity and Maturation
 
@@ -164,7 +180,7 @@ Within this function the $dia.*$ lines define the subsets of data that are relev
 Having defined the likelihood function the next step is to numerically minimize the negative log likelihood
 
 ```{r}
-param  <- c(0,0,0)        ## initial guess (update this based on the first two models!)
+param  <- c(a0,fit$par[1],fit$par[2])        ## initial guess (update this based on the first two models!)
 likfit(param,dia,ncone)   ## verify that the function works
 out = optim(param,        ## run numerical MLE
              likfit,
@@ -183,6 +199,17 @@ n   = length(cones)
 ### Lab Report Task 3
 
 Make two plots showing fecundity (dia vs ncone) and maturation (dia vs cones) showing both the raw data and the best fit model. For the fecundity plot include two lines, one representing fecundity vs size given maturity, $g(x)$, and the second that is the expected number of cones observed, which combines fecundity and the probability of maturation $g(x) \cdot \theta(x)$ 
+
+```{r task3}
+plot(dia,ncone,main="Fecundity")
+lines(xseq,a0*xseq^2,col="forestgreen",lwd=2)
+lines(xseq,a0*xseq^2*pnorm(xseq,b0,b1),col="blue",lwd=2)
+legend("topleft",legend=c("fecundity given maturity: g(x)","expected # of cones"),col=c("forestgreen","blue"),lwd=2)
+
+plot(dia,cones,main="Maturation")
+lines(xseq,pnorm(xseq,b0,b1),col=2,lwd=2)
+```
+
 
 ## Effects of Elevated CO2 on Reproduction
 
@@ -214,6 +241,28 @@ You can compare the "out" and "out.amb" variables and see that the model has con
 ###  Lab Report Task 4
 Repeat the analysis we just did but this time fit the model for just the elevated CO2 treatement (tmt == CO2).  Save the output to the variable "out.elev" and store the same output values to the third element of the parameter vectors (e.g. a0[3]).  Include a table of the values of the parameters in your lab report
 
+```{r task4}
+dia.co2 <- b$diam[tmt=="CO2"]
+ncone.co2 <- b$c00[tmt=="CO2"]
+
+out.elev <- optim(param,likfit,method="L-BFGS-B",
+                 lower=c(0.001,10,1),upper=c(1,30,10),dia=dia.co2,ncone=ncone.co2)
+a0[3] <- out.elev$par[1]
+b0[3] <- out.elev$par[2]
+b1[3] <- out.elev$par[3]
+lnL[3] <- out.elev$value
+n[3] <- length(ncone.co2)
+out.elev
+
+parameters <- matrix(c(a0,b0,b1,lnL,n),ncol=5)
+colnames(parameters) = c("a0","b0","b1","lnL","n")
+rownames(parameters) = c("all","ambient","co2")
+
+library(knitr)
+knitr::kable(parameters)
+```
+
+
 ## Model Selection
 
 Finally, we'll perform a _Likelihood Ratio Test_, which is a statistical test that compared two nested models based on their deviance ($-2lnL$).  Nested models are models that have the same functional form but where the reduced version of the model is achieved by fixing parameter values a priori.  For example, from last week's lab the Weibull and Exponential are nested models, where setting the c parameter equal to 1 in the Weibull gives the Exponential.  In the current context, the fit of the model to the whole dataset (out) is a nested version of the model with the CO2 treatment where the treatment effect is dropped.  In this context we're considering the two fits of the data to the two treatments (out.amb and out.elev) as one single model that has the same sample size as the single fit but twice as many parameters.
@@ -235,3 +284,21 @@ Create figures analogous to Task 3 that show the fits for the full model, the am
 
 1. Does elevated CO2 have an effect on fecundity? (Provide explanation for your answer).
 2. Is this effect simply due to there being larger trees in the elevated plots, or does CO2 affect the maturation rate and/or the fecundity of trees (i.e. the cone production at a given tree size)?  If there is an effect, in what direction is it?
+
+```{r task5}
+plot(dia,ncone,main="Fecundity")
+lines(xseq,a0[1]*xseq^2,col=1,lwd=2)
+lines(xseq,a0[2]*xseq^2,col=2,lwd=2)
+lines(xseq,a0[3]*xseq^2,col=3,lwd=2)
+legend("topleft",legend=c("Full model","Ambient","CO2"),col=1:3,lwd=2)
+
+plot(dia,cones,main="Maturity")
+lines(xseq,pnorm(xseq,b0[1],b1[1]),col=1,lwd=2)
+lines(xseq,pnorm(xseq,b0[2],b1[2]),col=2,lwd=2)
+lines(xseq,pnorm(xseq,b0[3],b1[3]),col=3,lwd=2)
+legend("topleft",legend=c("Full model","Ambient","CO2"),col=1:3,lwd=2)
+```
+
+1. Yes, elevated CO2 concentrations have a significant impact on the fecundity of trees. This is demonstrated by the likelihood ratio test; since the p-value is less than 0.5, we can say that the CO2 treatment has a statistically significant impact on tree fecundity. The fecundity plot indicates that elevated CO2 concentrations result in higher fecundity.
+
+2. According to the parameter values and the fecundity and maturation plots, elevated CO2 concentrations produce *both* higher fecundity (greater a0) and maturation rates (maturation occurs at lower mean diameter) than ambient air conditions. 
